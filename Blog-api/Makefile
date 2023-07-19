@@ -3,6 +3,7 @@ setup:
 	@make build
 	@make up 
 	@make composer-update
+	@make data
 	docker compose ps
 build:
 	docker-compose build 
