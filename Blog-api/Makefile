@@ -21,3 +21,7 @@ composer-update:
 data:
 	docker exec blog bash -c "php artisan migrate"
 	docker exec blog bash -c "php artisan db:seed"
+config:
+    docker exec blog bash -c "php artisan config:cache"
+    
+#sudo docker exec -it blog bash
