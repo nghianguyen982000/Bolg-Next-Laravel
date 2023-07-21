@@ -3,55 +3,47 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Laravel\Socialite\Facades\Socialite;
 
 class SocialController extends Controller
 {
+    public function googleLoginUrl()
 
-    /**
-     * Create a new AuthController instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        $this->middleware('auth:api', ['except' => ['callback']]);
-    }
-
-
-    public function redirect()
     {
         return Socialite::driver('google')->redirect();
     }
 
-    public function callback()
+    public function loginCallback()
     {
-
-        $getInfo = Socialite::driver('google')->user();
-
-        $user = $this->createUser($getInfo, 'google');
-
-        Auth::login($user);
-
-        return response()->json([
-            'message' => 'successfully',
-            'user' => $user,
-        ], 201);
-    }
-    function createUser($getInfo, $provider)
-    {
-
-        $user = User::where('provider_id', $getInfo->id)->first();
-
-        if (!$user) {
-            $user = User::create([
-                'name'     => $getInfo->name,
-                'email'    => $getInfo->email,
-                'provider' => $provider,
-                'provider_id' => $getInfo->id
-            ]);
+        try {
+            $googleUser = Socialite::driver('google')->stateless()->user();
+            Log::info('My message', ['user' => $googleUser]);
+            $user = User::where('email', $googleUser->email)->first();
+            if ($user) {
+                throw new \Exception(__('google sign in email existed'));
+            }
+            $user = User::create(
+                [
+                    'email' => $googleUser->email,
+                    'name' => $googleUser->name,
+                    'google_id' => $googleUser->id,
+                    'password' => '123',
+                ]
+            );
+            Auth::login($user);
+            return response()->json([
+                'status' => __('Google sign in successful'),
+                'data' => $user,
+            ], Response::HTTP_CREATED);
+        } catch (\Exception $exception) {
+            return response()->json([
+                'status' => __('Google sign in failed'),
+                'error' => $exception,
+                'message' => $exception->getMessage()
+            ], Response::HTTP_BAD_REQUEST);
         }
-        return $user;
     }
 }

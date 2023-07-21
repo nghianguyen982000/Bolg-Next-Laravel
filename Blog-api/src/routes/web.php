@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\SocialController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Socialite\Facades\Socialite;
 
@@ -17,8 +18,4 @@ use Laravel\Socialite\Facades\Socialite;
 Route::get('/', function () {
     return view('welcome');
 });
-
-Route::get('/auth/google', function () {
-    return Socialite::driver('google')->redirect();
-});
-
+Route::get('googleLoginUrl',  [SocialController::class, 'googleLoginUrl']);

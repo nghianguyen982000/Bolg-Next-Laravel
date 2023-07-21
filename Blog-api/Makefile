@@ -3,6 +3,7 @@ setup:
 	@make build
 	@make up 
 	@make composer-update
+	@make data-fresh
 	@make data
 	docker compose ps
 build:
@@ -21,6 +22,8 @@ composer-update:
 data:
 	docker exec blog bash -c "php artisan migrate"
 	docker exec blog bash -c "php artisan db:seed"
+data-fresh:
+	docker exec blog bash -c "php artisan migrate:fresh"
 config:
     docker exec blog bash -c "php artisan config:cache"
     
