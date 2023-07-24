@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 use App\Models\User;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
@@ -17,7 +18,7 @@ class AuthController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['login', 'register']]);
+        $this->middleware(['auth:api', 'verified'], ['except' => ['login', 'register', 'verify', 'notice']]);
     }
 
     /**
@@ -33,11 +34,11 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
+            return response()->json($validator->errors(),  Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         if (!$token = auth()->attempt($validator->validated())) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            return response()->json(['error' => 'Unauthorized'],  Response::HTTP_UNAUTHORIZED);
         }
 
         return $this->createNewToken($token);
@@ -57,18 +58,18 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json($validator->errors()->toJson(), 400);
+            return response()->json($validator->errors()->toJson(),  Response::HTTP_BAD_REQUEST);
         }
 
         $user = User::create(array_merge(
             $validator->validated(),
             ['password' => bcrypt($request->password)]
-        ));
+        ))->sendEmailVerificationNotification();
 
         return response()->json([
             'message' => 'User successfully registered',
             'user' => $user
-        ], 201);
+        ],  Response::HTTP_CREATED);
     }
 
 
@@ -81,7 +82,7 @@ class AuthController extends Controller
     {
         Auth::logout();
 
-        return response()->json(['message' => 'User successfully signed out']);
+        return response()->json(['message' => 'User successfully signed out'], Response::HTTP_OK);
     }
 
     /**
@@ -129,7 +130,7 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json($validator->errors()->toJson(), 400);
+            return response()->json($validator->errors()->toJson(),  Response::HTTP_BAD_REQUEST);
         }
         $userId = Auth::user()->id;
 
@@ -140,6 +141,55 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'User successfully changed password',
             'user' => $user,
-        ], 201);
+        ],  Response::HTTP_CREATED);
+    }
+
+    public function verify($id, Request $request)
+    {
+        if (!$request->hasValidSignature()) {
+            return response()->json(
+                [
+                    'status' => false,
+                    'massage' => 'Verifying email fails'
+                ],
+                Response::HTTP_BAD_REQUEST
+            );
+        }
+        $user = User::find($id);
+
+        if (!$user->hasVerifiedEmail()) {
+            $user->markEmailAsVerified();
+        }
+        return redirect()->to('/');
+    }
+    public function notice()
+    {
+        return response()->json(
+            [
+                'status' => false,
+                'massage' => 'Email is not verified'
+            ],
+            Response::HTTP_BAD_REQUEST
+        );
+    }
+    public function resend()
+    {
+        if (Auth::user()->hasVerifiedEmail()) {
+            return response()->json(
+                [
+                    'status' => true,
+                    'massage' => 'Verified email'
+                ],
+                Response::HTTP_OK
+            );
+        }
+        Auth::user()->sendEmailVerificationNotification();
+        return response()->json(
+            [
+                'status' => true,
+                'massage' => 'Email verification message sent to your email'
+            ],
+            Response::HTTP_OK
+        );
     }
 }

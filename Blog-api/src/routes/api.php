@@ -16,7 +16,6 @@ use App\Http\Controllers\SocialController;
 */
 
 Route::group([
-    'middleware' => 'api',
     'prefix' => 'auth'
 ], function () {
     Route::post('login', [AuthController::class, 'login']);
@@ -30,3 +29,6 @@ Route::group([
         [SocialController::class, 'loginCallback']
     );
 });
+Route::get('email/verify/{id}', [AuthController::class, 'verify'])->name('verification.verify');
+Route::get('email/verify', [AuthController::class, 'verify'])->name('verification.notice');
+Route::get('email/resend', [AuthController::class, 'resend'])->name('verification.resend');

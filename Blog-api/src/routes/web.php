@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\SocialController;
 use Illuminate\Support\Facades\Route;
-use Laravel\Socialite\Facades\Socialite;
 
 /*
 |--------------------------------------------------------------------------
