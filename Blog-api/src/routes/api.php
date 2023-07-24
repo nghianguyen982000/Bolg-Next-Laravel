@@ -32,3 +32,13 @@ Route::group([
 Route::get('email/verify/{id}', [AuthController::class, 'verify'])->name('verification.verify');
 Route::get('email/verify', [AuthController::class, 'verify'])->name('verification.notice');
 Route::get('email/resend', [AuthController::class, 'resend'])->name('verification.resend');
+
+Route::post(
+    'forgot-password',
+    [AuthController::class, 'forgotPassword']
+)->name('password.reset');
+
+Route::post(
+    'reset-password/{token}',
+    [AuthController::class, 'resetPassword']
+)->name('password.update');
