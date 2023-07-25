@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use Laravel\Socialite\Facades\Socialite;
 
 class SocialController extends Controller
@@ -20,17 +19,24 @@ class SocialController extends Controller
     {
         try {
             $googleUser = Socialite::driver('google')->stateless()->user();
-            Log::info('My message', ['user' => $googleUser]);
             $user = User::where('email', $googleUser->email)->first();
+            $googleId = User::where('password', $googleUser->id)->first();
+            if ($googleId) {
+                Auth::login($user);
+                return response()->json([
+                    'status' => __('Google sign in successful'),
+                    'data' => $googleId,
+                ], Response::HTTP_OK);
+            }
             if ($user) {
-                throw new \Exception(__('google sign in email existed'));
+                throw new \Exception(__('Google sign in email existed'));
             }
             $user = User::create(
                 [
                     'email' => $googleUser->email,
                     'name' => $googleUser->name,
                     'google_id' => $googleUser->id,
-                    'password' => '123',
+                    'password' => $googleUser->id,
                 ]
             );
             Auth::login($user);
