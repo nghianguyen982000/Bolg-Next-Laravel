@@ -2,16 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\ResetPassword;
+use App\Mail\VerifyEmail;
 use Illuminate\Http\Request;
 
 use App\Models\User;
-use Illuminate\Auth\Events\PasswordReset;
+use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\URL;
 
 class AuthController extends Controller
 {
@@ -22,30 +27,21 @@ class AuthController extends Controller
      */
     public function __construct()
     {
-        $this->middleware(['auth:api', 'verified'], ['except' => ['login', 'register', 'verify', 'notice', 'forgotPassword', 'resetPassword']]);
-    }
-
-    /**
-     * Get a JWT via given credentials.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function login(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
-            'password' => 'required|string|min:6',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json($validator->errors(),  Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        if (!$token = auth()->attempt($validator->validated())) {
-            return response()->json(['error' => 'Unauthorized'],  Response::HTTP_UNAUTHORIZED);
-        }
-
-        return $this->createNewToken($token);
+        $this->middleware(
+            ['auth:api', 'verified'],
+            ['except' =>
+            [
+                'login',
+                'resendPin',
+                'verifyEmail',
+                'register',
+                'verify',
+                'notice',
+                'forgotPassword',
+                'resetPassword',
+                'verifyPin'
+            ]]
+        );
     }
 
     /**
@@ -62,19 +58,197 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json($validator->errors()->toJson(),  Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(
+                $validator->errors()->toJson(),
+                Response::HTTP_BAD_REQUEST
+            );
         }
 
         $user = User::create(array_merge(
             $validator->validated(),
             ['password' => bcrypt($request->password)]
-        ))->sendEmailVerificationNotification();
+        ));
 
-        return response()->json([
-            'message' => 'User successfully registered',
-            'user' => $user
-        ],  Response::HTTP_CREATED);
+        if ($user) {
+
+            $verify2 =  DB::table('password_resets')->where([
+                ['email', $request->all()['email']]
+            ]);
+
+            if ($verify2->exists()) {
+                $verify2->delete();
+            }
+
+            $pin = rand(100000, 999999);
+            DB::table('password_resets')->insert([
+                'email' => $request->all()['email'],
+                'token' =>  $pin
+
+            ]);
+        }
+        Mail::to($request->email)->send(new VerifyEmail($pin));
+        return new JsonResponse(
+            [
+                'success' => true,
+                'message' => 'Successful created user. Please check your email for a 6-digit pin to verify your email.',
+            ],
+            Response::HTTP_CREATED
+        );
     }
+
+    /**
+     * Email verification.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function verifyEmail(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+
+            'token' => ['required'],
+            'email' => ['required', 'string', 'email', 'max:255'],
+        ]);
+
+        if ($validator->fails()) {
+            return new JsonResponse(
+                [
+                    'success' => false,
+                    'message' => $validator->errors()
+                ],
+                Response::HTTP_UNPROCESSABLE_ENTITY
+            );
+        }
+        $user = User::where('email', $request->email);
+        $select = DB::table('password_resets')
+            ->where('email', $request->email)
+            ->where('token', $request->token);
+        if ($select->get()->isEmpty()) {
+            return new JsonResponse(
+                [
+                    'success' => false,
+                    'message' => "Invalid token"
+                ],
+                Response::HTTP_UNPROCESSABLE_ENTITY
+            );
+        }
+
+        $difference = Carbon::now()->diffInSeconds($select->first()->created_at);
+        if ($difference > 3600) {
+            return new JsonResponse(
+                [
+                    'success' => false,
+                    'message' => "Token Expired"
+                ],
+                Response::HTTP_BAD_REQUEST
+            );
+        }
+
+        $select = DB::table('password_resets')
+            ->where('email', $request->email)
+            ->where('token', $request->token)
+            ->delete();
+
+        $user->update([
+            'email_verified_at' => Carbon::now()
+        ]);
+
+        return new JsonResponse(
+            [
+                'success' => true,
+                'message' => "Email is verified"
+            ],
+            Response::HTTP_OK
+        );
+    }
+
+    /**
+     * Resend Pin.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function resendPin(Request $request)
+    {
+
+        $validator = Validator::make($request->all(), [
+            'email' => ['required', 'string', 'email', 'max:255'],
+        ]);
+
+        if ($validator->fails()) {
+            return new JsonResponse(
+                [
+                    'success' => false,
+                    'message' => $validator->errors()
+                ],
+                Response::HTTP_UNPROCESSABLE_ENTITY
+            );
+        }
+
+
+        $verify2 =  DB::table('password_resets')->where([
+            ['email', $request->all()['email']]
+        ]);
+
+        if ($verify2->exists()) {
+            $verify2->delete();
+        }
+
+        $token = random_int(100000, 999999);
+        $password_reset = DB::table('password_resets')->insert([
+            'email' => $request->all()['email'],
+            'token' =>  $token,
+            'created_at' => Carbon::now()
+
+        ]);
+
+        if ($password_reset) {
+            Mail::to($request->all()['email'])->send(new VerifyEmail($token));
+
+            return new JsonResponse(
+                [
+                    'success' => true,
+                    'message' => "A verification mail has been resent"
+                ],
+                Response::HTTP_OK
+            );
+        }
+    }
+
+    /**
+     * Get a JWT via given credentials.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function login(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
+            'password' => 'required|string|min:6',
+        ]);
+
+        if ($validator->fails()) {
+            return new JsonResponse(
+                [
+                    'success' => false,
+                    'message' => $validator->errors()
+                ],
+                Response::HTTP_UNPROCESSABLE_ENTITY
+            );
+        }
+
+        if (!$token = auth()->attempt($validator->validated())) {
+            return new JsonResponse(
+                [
+                    'success' => false,
+                    'message' => 'Invalid Credentials'
+                ],
+                Response::HTTP_BAD_REQUEST
+            );
+        }
+
+        return $this->createNewToken($token);
+    }
+
+
 
 
     /**
@@ -86,7 +260,7 @@ class AuthController extends Controller
     {
         Auth::logout();
 
-        return response()->json(['message' => 'User successfully signed out'], Response::HTTP_OK);
+        return new JsonResponse(['message' => 'User successfully signed out'], Response::HTTP_OK);
     }
 
     /**
@@ -106,7 +280,7 @@ class AuthController extends Controller
      */
     public function userProfile()
     {
-        return response()->json(auth()->user());
+        return new JsonResponse(auth()->user());
     }
 
     /**
@@ -118,7 +292,7 @@ class AuthController extends Controller
      */
     protected function createNewToken($token)
     {
-        return response()->json([
+        return new JsonResponse([
             'access_token' => $token,
             'token_type' => 'bearer',
             'expires_in' => Auth::factory()->getTTL() * 60,
@@ -126,15 +300,22 @@ class AuthController extends Controller
         ]);
     }
 
+    /**
+     * Change PassWord.
+     *
+     * @param  string $token
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function changePassWord(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'old_password' => 'required|string|min:6',
-            'new_password' => 'required|string|confirmed|min:6',
+            'new_password' => 'required|string|min:6',
         ]);
 
         if ($validator->fails()) {
-            return response()->json($validator->errors()->toJson(),  Response::HTTP_BAD_REQUEST);
+            return new JsonResponse($validator->errors()->toJson(),  Response::HTTP_BAD_REQUEST);
         }
         $userId = Auth::user()->id;
 
@@ -142,118 +323,147 @@ class AuthController extends Controller
             ['password' => bcrypt($request->new_password)]
         );
 
-        return response()->json([
+        return new JsonResponse([
             'message' => 'User successfully changed password',
             'user' => $user,
         ],  Response::HTTP_CREATED);
     }
 
-    public function verify($id, Request $request)
+    /**
+     * Forgot password.
+     *
+     * @param  string $token
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function forgotPassword(Request $request)
     {
-        if (!$request->hasValidSignature()) {
-            return response()->json(
+        $validator = Validator::make($request->all(), [
+            'email' => ['required', 'string', 'email', 'max:255'],
+        ]);
+
+        if ($validator->fails()) {
+            return new JsonResponse(
                 [
-                    'status' => false,
-                    'massage' => 'Verifying email fails'
+                    'success' => false,
+                    'message' => $validator->errors()
+                ],
+                Response::HTTP_UNPROCESSABLE_ENTITY
+            );
+        }
+
+        $verify = User::where('email', $request->all()['email'])->exists();
+
+        if ($verify) {
+            $verify2 =  DB::table('password_resets')->where([
+                ['email', $request->all()['email']]
+            ]);
+
+            if ($verify2->exists()) {
+                $verify2->delete();
+            }
+
+            $token = Str::random(40);
+            $domain = Url::to('/');
+            $url = $domain . '/reset-password?token=' . $token;
+            $password_reset = DB::table('password_resets')->insert([
+                'email' => $request->all()['email'],
+                'token' =>  $token,
+                'created_at' => Carbon::now()
+            ]);
+
+            if ($password_reset) {
+
+
+                Mail::to($request->all()['email'])->send(new ResetPassword($url));
+
+                return new JsonResponse(
+                    [
+                        'success' => true,
+                        'message' => "Please check your email to reset password",
+                    ],
+                    Response::HTTP_OK
+                );
+            }
+        } else {
+            return new JsonResponse(
+                [
+                    'success' => false,
+                    'message' => "This email does not exist"
                 ],
                 Response::HTTP_BAD_REQUEST
             );
         }
-        $user = User::find($id);
-
-        if (!$user->hasVerifiedEmail()) {
-            $user->markEmailAsVerified();
-        }
-        return redirect()->to('/');
-    }
-    public function notice()
-    {
-        return response()->json(
-            [
-                'status' => false,
-                'massage' => 'Email is not verified'
-            ],
-            Response::HTTP_BAD_REQUEST
-        );
-    }
-    public function resend()
-    {
-        if (Auth::user()->hasVerifiedEmail()) {
-            return response()->json(
-                [
-                    'status' => true,
-                    'massage' => 'Verified email'
-                ],
-                Response::HTTP_OK
-            );
-        }
-        Auth::user()->sendEmailVerificationNotification();
-        return response()->json(
-            [
-                'status' => true,
-                'massage' => 'Email verification message sent to your email'
-            ],
-            Response::HTTP_OK
-        );
     }
 
-    public function forgotPassword(Request $request)
-    {
-        $request->validate(['email' => 'required|email']);
 
-        $status = Password::sendResetLink(
-            $request->only('email')
-        );
-
-        if ($status === Password::RESET_LINK_SENT) {
-            return response()->json(
-                [
-                    'message' => 'Send email successfully',
-                ],
-                Response::HTTP_OK
-            );
-        }
-        return response()->json(
-            [
-                'message' => 'Send email fail',
-            ],
-            Response::HTTP_BAD_REQUEST
-        );
-    }
+    /**
+     * Verify Pin.
+     *
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function resetPassword(Request $request)
     {
-        $request->validate([
-            'token' => 'required',
-            'email' => 'required|email',
-            'password' => 'required|min:8|confirmed',
+        $validator = Validator::make($request->all(), [
+            'email' => ['required', 'string', 'email', 'max:255'],
+            'token' => ['required'],
+            'password' => ['required', 'string', 'min:8'],
         ]);
 
-        $status = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
-            function ($user, $password) {
-                $user->forceFill([
-                    'password' => Hash::make($password)
-                ])->setRememberToken(Str::random(60));
-
-                $user->save();
-
-                event(new PasswordReset($user));
-            }
-        );
-
-        if ($status === Password::PASSWORD_RESET) {
-            return response()->json(
+        if ($validator->fails()) {
+            return new JsonResponse(
                 [
-                    'message' => 'Reset passwprd successfully',
+                    'success' => false,
+                    'message' => $validator->errors()
+                ],
+                Response::HTTP_UNPROCESSABLE_ENTITY
+            );
+        }
+
+        $check = DB::table('password_resets')->where([
+            ['email', $request->all()['email']],
+            ['token', $request->all()['token']],
+        ]);
+
+        if ($check->exists()) {
+            $difference = Carbon::now()->diffInSeconds($check->first()->created_at);
+            if ($difference > 3600) {
+                return new JsonResponse(
+                    [
+                        'success' => false,
+                        'message' => "Token Expired"
+                    ],
+                    Response::HTTP_BAD_REQUEST
+                );
+            }
+
+            $user = User::where('email', $request->email);
+
+            $user->update([
+                'password' => Hash::make($request->password)
+            ]);
+
+            DB::table('password_resets')->where([
+                ['email', $request->all()['email']],
+                ['token', $request->all()['token']],
+            ])->delete();
+
+            return new JsonResponse(
+                [
+                    'success' => true,
+                    'message' => "Your password has been reset",
                 ],
                 Response::HTTP_OK
             );
+        } else {
+            return new JsonResponse(
+                [
+                    'success' => false,
+                    'message' => "Invalid token"
+                ],
+                Response::HTTP_UNPROCESSABLE_ENTITY
+            );
         }
-        return response()->json(
-            [
-                'message' => 'Reset passwprd  fail',
-            ],
-            Response::HTTP_BAD_REQUEST
-        );
     }
 }
