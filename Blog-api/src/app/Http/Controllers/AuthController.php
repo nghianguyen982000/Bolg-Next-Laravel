@@ -3,8 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\SendEmailJob;
-use App\Mail\ResetPassword;
-use App\Mail\VerifyEmail;
 use Illuminate\Http\Request;
 
 use App\Models\User;
@@ -15,7 +13,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\URL;
 
@@ -401,7 +398,7 @@ class AuthController extends Controller
 
 
     /**
-     * Verify Pin.
+     * Reset Password.
      *
      *
      * @return \Illuminate\Http\JsonResponse
