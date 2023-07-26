@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\SendEmailJob;
 use App\Mail\ResetPassword;
 use App\Mail\VerifyEmail;
 use Illuminate\Http\Request;
@@ -86,7 +87,8 @@ class AuthController extends Controller
 
             ]);
         }
-        Mail::to($request->email)->send(new VerifyEmail($pin));
+        // Mail::to($request->email)->send(new VerifyEmail($pin));
+        dispatch(new SendEmailJob($pin, $request->email));
         return new JsonResponse(
             [
                 'success' => true,
@@ -201,8 +203,8 @@ class AuthController extends Controller
         ]);
 
         if ($password_reset) {
-            Mail::to($request->all()['email'])->send(new VerifyEmail($token));
-
+            // Mail::to($request->all()['email'])->send(new VerifyEmail($token));
+            dispatch(new SendEmailJob($token, $request->all()['email']));
             return new JsonResponse(
                 [
                     'success' => true,
@@ -375,7 +377,8 @@ class AuthController extends Controller
             if ($password_reset) {
 
 
-                Mail::to($request->all()['email'])->send(new ResetPassword($url));
+                // Mail::to($request->all()['email'])->send(new ResetPassword($url));
+                dispatch(new SendEmailJob($url, $request->all()['email']));
 
                 return new JsonResponse(
                     [

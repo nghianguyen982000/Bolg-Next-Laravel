@@ -25,6 +25,7 @@ data:
 data-fresh:
 	docker exec blog bash -c "php artisan migrate:fresh"
 config:
-    docker exec blog bash -c "php artisan config:cache"
-    
+	docker exec blog bash -c "php artisan config:cache"
+queue:
+	docker exec blog bash -c "php artisan queue:work"
 #sudo docker exec -it blog bash

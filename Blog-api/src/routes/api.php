@@ -22,7 +22,9 @@ Route::group([
     Route::post('login', [AuthController::class, 'login']);
     Route::post('change-password', [AuthController::class, 'changePassWord']);
     Route::get('user-profile', [AuthController::class, 'userProfile']);
-    Route::post('logout', [AuthController::class, 'logout']);
+    Route::middleware('verify.api')->group(function () {
+        Route::post('logout', [AuthController::class, 'logout']);
+    });
     Route::post('refresh', [AuthController::class, 'refresh']);
     Route::get(
         'auth-google-callback',
@@ -40,4 +42,3 @@ Route::post(
     'reset-password',
     [AuthController::class, 'resetPassword']
 );
-    
