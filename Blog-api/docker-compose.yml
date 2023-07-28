@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 services:
   # Web Server Service
@@ -16,7 +16,7 @@ services:
 
   #Database Service
   db:
-    image:  mysql
+    image: mysql
     container_name: mysql
     volumes:
       - ./mysql/data:/var/lib/mysql
@@ -52,7 +52,7 @@ services:
 
   # phpMyAdmin Service
   phpmyadmin:
-    image:  phpmyadmin:latest
+    image: phpmyadmin:latest
     container_name: phpmyadmin
     ports:
       - "3400:80"
@@ -68,3 +68,16 @@ services:
   #   environment:
   #     PGADMIN_DEFAULT_EMAIL: hanieasemi76@gmail.com
   #     PGADMIN_DEFAULT_PASSWORD: password
+
+  minio:
+    image: minio/minio
+    container_name: minio
+    ports:
+      - "7000:7777"
+      - "7001:7001"
+    volumes:
+      - ./s3:/data
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server --console-address ":7001" /data
