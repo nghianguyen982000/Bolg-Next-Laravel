@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\S3Controller;
 use App\Http\Controllers\SocialController;
 
 /*
@@ -51,4 +52,11 @@ Route::group([
     Route::post('', [PostController::class, 'store']);
     Route::put('/{post}', [PostController::class, 'update']);
     Route::delete('/{post}', [PostController::class, 'destroy']);
+});
+
+Route::group([
+    'prefix' => 'upload'
+], function () {
+    Route::get('get_pre_signed', [S3Controller::class, 'createGetObjectPresignedURL']);
+    Route::get('pre_signed', [S3Controller::class, 'createPutObjectPreSignedURL']);
 });

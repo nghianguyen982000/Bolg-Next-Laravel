@@ -3,7 +3,6 @@ setup:
 	@make build
 	@make up 
 	@make composer-update
-	@make data-fresh
 	@make data
 	docker compose ps
 build:
@@ -12,6 +11,7 @@ stop:
 	docker-compose stop
 up:
 	docker-compose up -d
+	docker compose ps
 restart:
 	docker-compose down
 	@make up

@@ -46,8 +46,6 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./src:/var/www
-    ports:
-      - "9000:9000"
     working_dir: /var/www
 
   # phpMyAdmin Service
@@ -69,15 +67,27 @@ services:
   #     PGADMIN_DEFAULT_EMAIL: hanieasemi76@gmail.com
   #     PGADMIN_DEFAULT_PASSWORD: password
 
-  minio:
+  s3:
     image: minio/minio
-    container_name: minio
-    ports:
-      - "7000:7777"
-      - "7001:7001"
-    volumes:
-      - ./s3:/data
     environment:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
-    command: server --console-address ":7001" /data
+    entrypoint: bash
+    command: -c "/opt/bin/minio server /export --address :9999 --console-address :9001"
+    volumes:
+      - ./s3/data:/export
+    ports:
+      - 9000:9999
+      - 9001:9001
+
+  createbuckets:
+    image: minio/mc
+    depends_on:
+      - s3
+    entrypoint: >
+      /bin/sh -c "
+      until (/usr/bin/mc config host add myminio http://s3:9999 minioadmin minioadmin) do echo '...waiting...' && sleep 1; done;
+      /usr/bin/mc mb myminio/blog.private;
+      /usr/bin/mc policy set public myminio/blog.private;
+      exit 0;
+      "
