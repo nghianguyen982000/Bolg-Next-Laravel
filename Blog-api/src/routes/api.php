@@ -24,6 +24,7 @@ Route::group([
     Route::post('login', [AuthController::class, 'login']);
     Route::post('change-password', [AuthController::class, 'changePassWord']);
     Route::get('user-profile', [AuthController::class, 'userProfile']);
+    Route::get('user/posts', [AuthController::class, 'listPost']);
     Route::middleware('verify.api')->group(function () {
         Route::post('logout', [AuthController::class, 'logout']);
     });
