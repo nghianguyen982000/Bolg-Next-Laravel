@@ -104,7 +104,7 @@ class PostController extends Controller
             [
                 'success' => true,
             ],
-            Response::HTTP_NO_CONTENT
+            Response::HTTP_OK
         );
     }
 }

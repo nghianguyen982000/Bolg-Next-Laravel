@@ -59,4 +59,5 @@ Route::group([
 ], function () {
     Route::get('get_pre_signed', [S3Controller::class, 'createGetObjectPresignedURL']);
     Route::get('pre_signed', [S3Controller::class, 'createPutObjectPreSignedURL']);
+    Route::delete('delete_file', [S3Controller::class, 'deleteFile']);
 });
