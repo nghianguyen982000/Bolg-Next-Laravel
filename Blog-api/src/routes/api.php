@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PostController;
+use App\Http\Controllers\S3Controller;
 use App\Http\Controllers\SocialController;
 
 /*
@@ -30,15 +32,32 @@ Route::group([
         'auth-google-callback',
         [SocialController::class, 'loginCallback']
     );
+    Route::post('email/verify', [AuthController::class, 'verifyEmail']);
+    Route::post('email/verify/pin', [AuthController::class, 'resendPin']);
+    Route::post(
+        'forgot-password',
+        [AuthController::class, 'forgotPassword']
+    );
+    Route::post(
+        'reset-password',
+        [AuthController::class, 'resetPassword']
+    );
 });
 
-Route::post('email/verify', [AuthController::class, 'verifyEmail']);
-Route::post('email/verify/pin', [AuthController::class, 'resendPin']);
-Route::post(
-    'forgot-password',
-    [AuthController::class, 'forgotPassword']
-);
-Route::post(
-    'reset-password',
-    [AuthController::class, 'resetPassword']
-);
+Route::group([
+    'prefix' => 'post'
+], function () {
+    Route::get('', [PostController::class, 'index']);
+    Route::get('/{post}', [PostController::class, 'show']);
+    Route::post('', [PostController::class, 'store']);
+    Route::put('/{post}', [PostController::class, 'update']);
+    Route::delete('/{post}', [PostController::class, 'destroy']);
+});
+
+Route::group([
+    'prefix' => 'upload'
+], function () {
+    Route::get('get_pre_signed', [S3Controller::class, 'createGetObjectPresignedURL']);
+    Route::get('pre_signed', [S3Controller::class, 'createPutObjectPreSignedURL']);
+    Route::delete('delete_file', [S3Controller::class, 'deleteFile']);
+});
