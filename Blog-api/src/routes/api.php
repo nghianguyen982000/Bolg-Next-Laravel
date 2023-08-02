@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CommentController;
+use App\Http\Controllers\LikeController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\S3Controller;
 use App\Http\Controllers\SocialController;
@@ -24,6 +26,7 @@ Route::group([
     Route::post('login', [AuthController::class, 'login']);
     Route::post('change-password', [AuthController::class, 'changePassWord']);
     Route::get('user-profile', [AuthController::class, 'userProfile']);
+    Route::get('user/posts', [AuthController::class, 'listPost']);
     Route::middleware('verify.api')->group(function () {
         Route::post('logout', [AuthController::class, 'logout']);
     });
@@ -52,6 +55,12 @@ Route::group([
     Route::post('', [PostController::class, 'store']);
     Route::put('/{post}', [PostController::class, 'update']);
     Route::delete('/{post}', [PostController::class, 'destroy']);
+    Route::post('/{id}/like', [LikeController::class, 'store']);
+    Route::delete('/{id}/unlike', [LikeController::class, 'destroy']);
+    Route::get('/{id}/comments', [CommentController::class, 'index']);
+    Route::post('/{id}/comment', [CommentController::class, 'store']);
+    Route::put('/{id}/comment', [CommentController::class, 'update']);
+    Route::delete('/{id}/comment', [CommentController::class, 'destroy']);
 });
 
 Route::group([

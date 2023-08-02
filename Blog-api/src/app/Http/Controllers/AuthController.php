@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\PostCollection;
 use App\Jobs\SendEmailJob;
+use App\Models\Post;
 use Illuminate\Http\Request;
 
 use App\Models\User;
@@ -37,7 +39,8 @@ class AuthController extends Controller
                 'notice',
                 'forgotPassword',
                 'resetPassword',
-                'verifyPin'
+                'verifyPin',
+                'listPost'
             ]]
         );
     }
@@ -279,7 +282,28 @@ class AuthController extends Controller
      */
     public function userProfile()
     {
-        return new JsonResponse(auth()->user());
+
+        $user = auth()->user();
+        return new JsonResponse(
+            [
+                'success' => false,
+                'user' => $user,
+
+            ],
+            Response::HTTP_OK
+        );
+    }
+
+    /**
+     * Get the authenticated User.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function listPost()
+    {
+
+        $posts = auth()->user()->posts()->paginate(5);
+        return new PostCollection($posts);
     }
 
     /**
