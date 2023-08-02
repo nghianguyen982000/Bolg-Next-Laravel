@@ -12,6 +12,10 @@ use Illuminate\Support\Str;
 
 class S3Controller extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth:api');
+    }
     public function generateUploadUrl(string $filePath, string $method = 'PutObject')
     {
         $key  = config('filesystems.disks.s3.key');
