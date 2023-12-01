@@ -1,3 +1,3 @@
 <template>
-  <div>hello fdsf fds ffasdfsda</div>
+  <router-view></router-view>
 </template>
