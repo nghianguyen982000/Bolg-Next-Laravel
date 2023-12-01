@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
 Route::get('googleLoginUrl',  [SocialController::class, 'googleLoginUrl']);
+
+Route::view("/{any}", "app")->where("any", ".*");
