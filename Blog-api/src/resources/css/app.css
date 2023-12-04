@@ -2,3 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+
+@screen sm {
+    #navbar .router-link-active {
+    @apply text-current border-b-2;
+}
+}
+
+.hero-height {
+height: calc(100vh - 5rem);
+}
+@screen sm {
+.hero-height {
+    @apply h-screen;
+}
+}
