@@ -5,22 +5,31 @@ const home = [
         children: [
             {
                 path: "",
-                component:()=>import('../pages/home/index.vue')
+                name: "home page",
+                component: () => import("../pages/home/index.vue"),
             },
             {
                 path: "/about",
-                component:()=>import('../pages/about/index.vue')
+                name: "about page",
+                component: () => import("../pages/about/index.vue"),
             },
             {
                 path: "/contact",
-                component:()=>import('../pages/contact/index.vue')
+                name: "contact page",
+                component: () => import("../pages/contact/index.vue"),
             },
             {
                 path: "/articles",
-                component:()=>import('../pages/article/index.vue')
+                name: "article page",
+                component: () => import("../pages/article/index.vue"),
+            },
+            {
+                path: "/articles/:slug",
+                name: "article detail page",
+                component: () => import("../pages/article/show.vue"),
             },
         ],
     },
 ];
 
-export default home
+export default home;

@@ -22,7 +22,7 @@
         <div class="text-base text-gray-500">Article name</div>
         <h3 class="mt-1 leading-tight text-2xl">
           <router-link
-            to="`/articles/`"
+            to="/articles/1"
             class="hover:text-primary font-bold transition-colors duration-300"
           >
             Article title
