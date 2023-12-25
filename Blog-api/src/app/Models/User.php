@@ -2,16 +2,21 @@
 
 namespace App\Models;
 
-use Illuminate\Auth\Passwords\CanResetPassword;
-use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Tymon\JWTAuth\Contracts\JWTSubject;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Fortify\TwoFactorAuthenticatable;
+use Laravel\Jetstream\HasProfilePhoto;
+use Laravel\Sanctum\HasApiTokens;
 
-class User extends Authenticatable implements JWTSubject, MustVerifyEmail
+class User extends Authenticatable
 {
-    use  Notifiable, CanResetPassword, HasFactory;
+    use HasApiTokens;
+    use HasFactory;
+    use HasProfilePhoto;
+    use Notifiable;
+    use TwoFactorAuthenticatable;
 
     /**
      * The attributes that are mass assignable.
@@ -22,7 +27,6 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
         'name',
         'email',
         'password',
-
     ];
 
     /**
@@ -33,7 +37,8 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
     protected $hidden = [
         'password',
         'remember_token',
-        'google_id'
+        'two_factor_recovery_codes',
+        'two_factor_secret',
     ];
 
     /**
@@ -46,35 +51,11 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
     ];
 
     /**
-     * Get the identifier that will be stored in the subject claim of the JWT.
+     * The accessors to append to the model's array form.
      *
-     * @return mixed
+     * @var array
      */
-    public function getJWTIdentifier()
-    {
-        return $this->getKey();
-    }
-
-    /**
-     * Return a key value array, containing any custom claims to be added to the JWT.
-     *
-     * @return array
-     */
-    public function getJWTCustomClaims()
-    {
-        return [];
-    }
-
-    public function posts()
-    {
-        return $this->hasMany(Post::class);
-    }
-    public function likes()
-    {
-        return $this->hasMany(Like::class);
-    }
-    public function comments()
-    {
-        return $this->hasMany(Comment::class);
-    }
+    protected $appends = [
+        'profile_photo_url',
+    ];
 }
