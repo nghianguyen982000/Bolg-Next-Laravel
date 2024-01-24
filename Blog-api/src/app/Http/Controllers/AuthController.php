@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\RegisterRequest;
 use App\Http\Resources\PostCollection;
 use App\Jobs\SendEmailJob;
-use App\Models\Post;
 use Illuminate\Http\Request;
 
 use App\Models\User;
@@ -46,17 +46,35 @@ class AuthController extends Controller
     }
 
     /**
-     * Register a User.
+     * Register User
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @OA\Post(
+     *      path="/api/auth/register",
+     *      tags={"Auth"},
+     *      @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *              ref="#/components/schemas/RegisterRequest"
+     *         )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation",
+     *          @OA\MediaType(
+     *              mediaType="application/json",
+     *          ),
+     *       ),
+     *      @OA\Response(
+     *          response=403,
+     *          description="Forbidden"
+     *      )
+     * )
+     *  @param RegisterRequest $request
+     *  @return \Illuminate\Http\JsonResponse
      */
-    public function register(Request $request)
+    public function register(RegisterRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|between:2,100',
-            'email' => 'required|string|email|max:100|unique:users',
-            'password' => 'required|string|min:6',
-        ]);
+        $validator = Validator::make($request->all(), $request->rules());
 
         if ($validator->fails()) {
             return new JsonResponse(
