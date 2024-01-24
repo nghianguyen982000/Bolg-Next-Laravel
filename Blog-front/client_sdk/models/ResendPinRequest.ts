@@ -3,9 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type RegisterRequest = {
-  name: string;
+export type ResendPinRequest = {
   email: string;
-  password: string;
 };
 

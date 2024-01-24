@@ -2,9 +2,9 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export const $RegisterRequest = {
+export const $ResetPasswordRequest = {
   properties: {
-    name: {
+    token: {
       type: 'string',
       isRequired: true,
       format: 'name',

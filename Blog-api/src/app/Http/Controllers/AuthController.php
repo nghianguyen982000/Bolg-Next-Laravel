@@ -2,7 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ChangePasswordRequest;
+use App\Http\Requests\EmailVerifyRequest;
+use App\Http\Requests\ForgotPasswordRequest;
+use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
+use App\Http\Requests\ResendPinRequest;
+use App\Http\Requests\ResetPasswordRequest;
 use App\Http\Resources\PostCollection;
 use App\Jobs\SendEmailJob;
 use Illuminate\Http\Request;
@@ -58,17 +64,25 @@ class AuthController extends Controller
      *              ref="#/components/schemas/RegisterRequest"
      *         )
      *      ),
-     *      @OA\Response(
+     *    @OA\Response(
      *          response=200,
-     *          description="Successful operation",
-     *          @OA\MediaType(
-     *              mediaType="application/json",
+     *          description="Register successfully",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="success", type="boolean", example="true"),
+     *              @OA\Property(property="message", type="string", example="Successful created user. Please check your email for a 6-digit pin to verify your email."),
      *          ),
-     *       ),
-     *      @OA\Response(
-     *          response=403,
-     *          description="Forbidden"
-     *      )
+     *      ),
+     *     @OA\Response(
+     *          response=422,
+     *          description="Validation error",
+     *            @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="The email has already been taken"),
+     *              @OA\Property(
+     *                  property="errors",
+     *                  type="object"
+     *              ),
+     *          ),
+     *      ),
      * )
      *  @param RegisterRequest $request
      *  @return \Illuminate\Http\JsonResponse
@@ -120,15 +134,39 @@ class AuthController extends Controller
     /**
      * Email verification.
      *
+     *   @OA\Post(
+     *      path="/api/auth/email/verify",
+     *      tags={"Auth"},
+     *      operationId="email-verify",
+     *      @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *              ref="#/components/schemas/EmailVerifyRequest"
+     *         )
+     *      ),
+     *    @OA\Response(
+     *          response=200,
+     *          description="Verify email successfully",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="success", type="boolean", example="true"),
+     *              @OA\Property(property="message", type="string", example="Email is verified."),
+     *          ),
+     *      ),
+     *     @OA\Response(
+     *          response=422,
+     *          description="Verify email error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="success", type="boolean", example="false"),
+     *              @OA\Property(property="message", type="string", example="Invalid token."),
+     *          ),
+     *      ),
+     * )
+     * @param EmailVerifyRequest $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function verifyEmail(Request $request)
+    public function verifyEmail(EmailVerifyRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-
-            'token' => ['required'],
-            'email' => ['required', 'string', 'email', 'max:255'],
-        ]);
+        $validator = Validator::make($request->all(),  $request->rules());
 
         if ($validator->fails()) {
             return new JsonResponse(
@@ -185,14 +223,40 @@ class AuthController extends Controller
     /**
      * Resend Pin.
      *
+     *   @OA\Post(
+     *      path="/api/auth/email/verify/pin",
+     *      tags={"Auth"},
+     *      operationId="resend-pin",
+     *      @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *              ref="#/components/schemas/ResendPinRequest"
+     *         )
+     *      ),
+     *    @OA\Response(
+     *          response=200,
+     *          description="Resend pin  successfully",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="success", type="boolean", example="true"),
+     *              @OA\Property(property="message", type="string", example="A verification mail has been resent."),
+     *          ),
+     *      ),
+     *     @OA\Response(
+     *          response=422,
+     *          description="Resend pin  error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="success", type="boolean", example="false"),
+     *              @OA\Property(property="message", type="string", example="Email is not registered."),
+     *          ),
+     *      ),
+     * )
+     * @param ResendPinRequest $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function resendPin(Request $request)
+    public function resendPin(ResendPinRequest $request)
     {
 
-        $validator = Validator::make($request->all(), [
-            'email' => ['required', 'string', 'email', 'max:255'],
-        ]);
+        $validator = Validator::make($request->all(),  $request->rules());
 
         if ($validator->fails()) {
             return new JsonResponse(
@@ -206,12 +270,20 @@ class AuthController extends Controller
 
 
         $verify2 =  DB::table('password_resets')->where([
-            ['email', $request->all()['email']]
+            ['email', $request->input('email')]
         ]);
 
-        if ($verify2->exists()) {
-            $verify2->delete();
+
+        if (!$verify2->exists()) {
+            return new JsonResponse(
+                [
+                    'success' => false,
+                    'message' => "Email is not registered"
+                ],
+                Response::HTTP_UNPROCESSABLE_ENTITY
+            );
         }
+        $verify2->delete();
 
         $token = random_int(100000, 999999);
         $password_reset = DB::table('password_resets')->insert([
@@ -235,31 +307,21 @@ class AuthController extends Controller
     }
 
     /**
+     * Login
+     *
      * @OA\Post(
      *    path="/api/auth/login",
      *    tags={"Auth"},
-     *    summary="login",
-     *    operationId="login",
-     *   @OA\RequestBody(
-     *          description="User data",
-     *          required=true,
-     *          @OA\MediaType(
-     *              mediaType="multipart/form-data",
-     *              @OA\Schema(
-     *                  @OA\Property(
-     *                      property="email",
-     *                      type="string",
-     *                  ),
-     *                  @OA\Property(
-     *                      property="password",
-     *                      type="string"
-     *                  ),
-     *              )
-     *          )
+     *    operationId="Login",
+     *      @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *              ref="#/components/schemas/LoginRequest"
+     *         )
      *      ),
      *    @OA\Response(
      *          response=200,
-     *          description="Successful login",
+     *          description="Login  successfully",
      *          @OA\JsonContent(
      *              @OA\Property(property="access_token", type="string", example="eyJ0eXAiOiJKV1..."),
      *              @OA\Property(property="token_type", type="string", example="bearer"),
@@ -270,50 +332,26 @@ class AuthController extends Controller
      *                  @OA\Property(property="email", type="string", example="freichert@schowalter.com"),
      *                  @OA\Property(property="email_verified_at", type="string", example=null),
      *                  @OA\Property(property="created_at", type="string", example=null),
-     *                  @OA\Property(property="updated_at", type="string", example=null),
-     *                  @OA\Property(property="primary_phone_number", type="string", example=null),
-     *                  @OA\Property(property="secondary_phone_number", type="string", example=null),
-     *                  @OA\Property(property="company_id", type="integer", example=1),
-     *                  @OA\Property(property="role_id", type="integer", example=5),
-     *                  @OA\Property(property="line_number", type="string", example=null),
+     *                  @OA\Property(property="updated_at", type="string", example=null)
      *              ),
      *          ),
      *      ),
-     *    @OA\Response(
-     *           response=401,
-     *           description="Unauthenticated",
-     *           @OA\JsonContent(
-     *               @OA\Property(property="message", type="string", example="メールアドレスまたはパスワードが間違っています。")
-     *           ),
-     *       ),
      *     @OA\Response(
      *          response=422,
-     *          description="Validation error",
+     *          description="Resend pin  error",
      *          @OA\JsonContent(
-     *              @OA\Property(property="email", type="array",
-     *                  @OA\Items(type="string", example="必須項目です。")
-     *              ),
-     *              @OA\Property(property="password", type="array",
-     *                  @OA\Items(type="string", example="必須項目です。")
-     *              ),
+     *              @OA\Property(property="success", type="boolean", example="false"),
+     *              @OA\Property(property="message", type="string", example="Invalid Credentials"),
      *          ),
      *      ),
-     *      @OA\Response(
-     *          response=400,
-     *          description="error",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string")
-     *          ),
-     *      ),
-     *  )
-     * /
+     * )
+     * @param LoginRequest $request
+     * @return \Illuminate\Http\JsonResponse
+     *
      */
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
-            'password' => 'required|string|min:6',
-        ]);
+        $validator = Validator::make($request->all(), $request->rules());
 
         if ($validator->fails()) {
             return new JsonResponse(
@@ -344,6 +382,27 @@ class AuthController extends Controller
     /**
      * Log the user out (Invalidate the token).
      *
+     * @OA\Post(
+     *    path="/api/auth/logout",
+     *    tags={"Auth"},
+     *    security={{"AdminBearerAuth":{}}},
+     *    operationId="logout",
+     *    @OA\Response(
+     *          response=200,
+     *          description="User successfully signed out",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="User successfully signed out"),
+     *          ),
+     *      ),
+     *     @OA\Response(
+     *          response=401,
+     *          description="Unauthenticated",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Unauthenticated.")
+     *          ),
+     *      ),
+     * )
+     *
      * @return \Illuminate\Http\JsonResponse
      */
     public function logout()
@@ -356,6 +415,37 @@ class AuthController extends Controller
     /**
      * Refresh a token.
      *
+     * @OA\Post(
+     *    path="/api/auth/refresh",
+     *    tags={"Auth"},
+     *    security={{"AdminBearerAuth":{}}},
+     *    operationId="refresh",
+     *    @OA\Response(
+     *          response=200,
+     *          description="Refresh successfully",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="access_token", type="string", example="eyJ0eXAiOiJKV1..."),
+     *              @OA\Property(property="token_type", type="string", example="bearer"),
+     *              @OA\Property(property="expires_in", type="integer", example=3600),
+     *              @OA\Property(property="user", type="object",
+     *                  @OA\Property(property="id", type="integer", example=13),
+     *                  @OA\Property(property="name", type="string", example="Gust Stracke I"),
+     *                  @OA\Property(property="email", type="string", example="freichert@schowalter.com"),
+     *                  @OA\Property(property="email_verified_at", type="string", example=null),
+     *                  @OA\Property(property="created_at", type="string", example=null),
+     *                  @OA\Property(property="updated_at", type="string", example=null)
+     *              ),
+     *          ),
+     *      ),
+     *     @OA\Response(
+     *          response=401,
+     *          description="Unauthenticated",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Unauthenticated.")
+     *          ),
+     *      ),
+     * )
+     *
      * @return \Illuminate\Http\JsonResponse
      */
     public function refresh()
@@ -366,6 +456,34 @@ class AuthController extends Controller
     /**
      * Get the authenticated User.
      *
+     * @OA\Post(
+     *    path="/api/auth/use-profile",
+     *    tags={"Auth"},
+     *    security={{"AdminBearerAuth":{}}},
+     *    operationId="use-profile",
+     *    @OA\Response(
+     *          response=200,
+     *          description="Profile",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="user", type="object",
+     *                  @OA\Property(property="id", type="integer", example=13),
+     *                  @OA\Property(property="name", type="string", example="Gust Stracke I"),
+     *                  @OA\Property(property="email", type="string", example="freichert@schowalter.com"),
+     *                  @OA\Property(property="email_verified_at", type="string", example=null),
+     *                  @OA\Property(property="created_at", type="string", example=null),
+     *                  @OA\Property(property="updated_at", type="string", example=null)
+     *              ),
+     *          ),
+     *      ),
+     *     @OA\Response(
+     *          response=401,
+     *          description="Unauthenticated",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Unauthenticated.")
+     *          ),
+     *      ),
+     * )
+     *
      * @return \Illuminate\Http\JsonResponse
      */
     public function userProfile()
@@ -374,7 +492,6 @@ class AuthController extends Controller
         $user = auth()->user();
         return new JsonResponse(
             [
-                'success' => false,
                 'user' => $user,
 
             ],
@@ -414,44 +531,94 @@ class AuthController extends Controller
     /**
      * Change PassWord.
      *
-     * @param  string $token
+     *  @OA\Post(
+     *    path="/api/auth/change-password",
+     *    tags={"Auth"},
+     *    security={{"AdminBearerAuth":{}}},
+     *    operationId="change-password",
+     *    @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *              ref="#/components/schemas/ChangePasswordRequest"
+     *         )
+     *      ),
+     *    @OA\Response(
+     *          response=200,
+     *          description="User successfully changed password",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="User successfully changed password"),
+     *          ),
+     *      ),
+     *     @OA\Response(
+     *          response=401,
+     *          description="Unauthenticated",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Unauthenticated.")
+     *          ),
+     *      ),
+     * )
+     * @param ChangePasswordRequest $request
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function changePassWord(Request $request)
+    public function changePassWord(ChangePasswordRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'old_password' => 'required|string|min:6',
-            'new_password' => 'required|string|min:6',
-        ]);
+        $validator = Validator::make($request->all(), $request->rules());
 
         if ($validator->fails()) {
             return new JsonResponse($validator->errors()->toJson(),  Response::HTTP_BAD_REQUEST);
         }
-        $userId = Auth::user()->id;
 
-        $user = User::where('id', $userId)->update(
-            ['password' => bcrypt($request->new_password)]
-        );
+        $user = Auth::user();
 
-        return new JsonResponse([
-            'message' => 'User successfully changed password',
-            'user' => $user,
-        ],  Response::HTTP_CREATED);
+        if (password_verify($request->input('old_password'), $user->password)) {
+            $user = User::where('id', $user->id)->update(
+                ['password' => bcrypt($request->new_password)]
+            );
+
+            return new JsonResponse([
+                'message' => 'User successfully changed password',
+            ],  Response::HTTP_CREATED);
+        } else {
+            return new JsonResponse(['message' => 'Current password is incorrect'],  Response::HTTP_BAD_REQUEST);
+        }
     }
 
     /**
      * Forgot password.
      *
-     * @param  string $token
-     *
+     *  @OA\Post(
+     *    path="/api/auth/forgot-password",
+     *    tags={"Auth"},
+     *    security={{"AdminBearerAuth":{}}},
+     *    operationId="forgot-password",
+     *    @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *              ref="#/components/schemas/ForgotPasswordRequest"
+     *         )
+     *      ),
+     *    @OA\Response(
+     *          response=200,
+     *          description="Please check your email to reset password",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Please check your email to reset password"),
+     *          ),
+     *      ),
+     *     @OA\Response(
+     *          response=401,
+     *          description="Unauthenticated",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Unauthenticated.")
+     *          ),
+     *      ),
+     * )
+     * @param ForgotPasswordRequest $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function forgotPassword(Request $request)
+    public function forgotPassword(ForgotPasswordRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'email' => ['required', 'string', 'email', 'max:255'],
-        ]);
+        $validator = Validator::make($request->all(), $request->rules());
 
         if ($validator->fails()) {
             return new JsonResponse(
@@ -512,16 +679,39 @@ class AuthController extends Controller
     /**
      * Reset Password.
      *
+     *  @OA\Post(
+     *    path="/api/auth/reset-password",
+     *    tags={"Auth"},
+     *    security={{"AdminBearerAuth":{}}},
+     *    operationId="reset-password",
+     *    @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *              ref="#/components/schemas/ForgotPasswordRequest"
+     *         )
+     *      ),
+     *    @OA\Response(
+     *          response=200,
+     *          description="Your password has been reset",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Your password has been reset"),
+     *          ),
+     *      ),
+     *     @OA\Response(
+     *          response=401,
+     *          description="Unauthenticated",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="Unauthenticated.")
+     *          ),
+     *      ),
+     * )
+     * @param ResetPasswordRequest $request
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function resetPassword(Request $request)
+    public function resetPassword(ResetPasswordRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'email' => ['required', 'string', 'email', 'max:255'],
-            'token' => ['required'],
-            'password' => ['required', 'string', 'min:8'],
-        ]);
+        $validator = Validator::make($request->all(), $request->rules());
 
         if ($validator->fails()) {
             return new JsonResponse(

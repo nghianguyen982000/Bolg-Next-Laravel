@@ -3,9 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type RegisterRequest = {
-  name: string;
+export type ForgotPasswordRequest = {
   email: string;
-  password: string;
 };
 

@@ -7,16 +7,15 @@ use Illuminate\Foundation\Http\FormRequest;
 
 /**
  * @OA\Schema(
- *      required={"name", "email", "password"},
+ *      required={ "email", "password"},
  *      properties={
- *           @OA\Property(property="name",type="string",format="name",example="client"),
  *           @OA\Property(property="email",type="string", format="email",example="client@example.com"),
  *           @OA\Property(property="password",type="string", format="password",example="password"),
  *      }
  * )
  */
 
-class RegisterRequest extends FormRequest
+class LoginRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -36,8 +35,7 @@ class RegisterRequest extends FormRequest
     public function rules()
     {
         return [
-            'name' => 'required|string|between:2,100',
-            'email' => 'required|string|email|max:100|unique:users',
+            'email' => 'required|email',
             'password' => 'required|string|min:6',
         ];
     }

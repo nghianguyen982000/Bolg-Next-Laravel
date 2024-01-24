@@ -2,22 +2,17 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export const $RegisterRequest = {
+export const $ChangePasswordRequest = {
   properties: {
-    name: {
+    old_password: {
       type: 'string',
       isRequired: true,
-      format: 'name',
+      format: 'old_password',
     },
-    email: {
+    new_password: {
       type: 'string',
       isRequired: true,
-      format: 'email',
-    },
-    password: {
-      type: 'string',
-      isRequired: true,
-      format: 'password',
+      format: 'new_password',
     },
   },
 } as const;

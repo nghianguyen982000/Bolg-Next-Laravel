@@ -3,9 +3,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type RegisterRequest = {
-  name: string;
+export type EmailVerifyRequest = {
+  token: string;
   email: string;
-  password: string;
 };
 

@@ -2,13 +2,8 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export const $RegisterRequest = {
+export const $LoginRequest = {
   properties: {
-    name: {
-      type: 'string',
-      isRequired: true,
-      format: 'name',
-    },
     email: {
       type: 'string',
       isRequired: true,

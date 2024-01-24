@@ -12,7 +12,7 @@ use Illuminate\Routing\Controller as BaseController;
  * @OA\Info(title="API BLOG", version="1.0")
  * @OA\Server(url="http://localhost:8080")
  * @OA\SecurityScheme(
- *      securityScheme="bearer_token",
+ *      securityScheme="AdminBearerAuth",
  *      description="Use /auth get to token",
  *      type="http",
  *      name="Authorization",

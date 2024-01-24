@@ -2,22 +2,17 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export const $RegisterRequest = {
+export const $EmailVerifyRequest = {
   properties: {
-    name: {
+    token: {
       type: 'string',
       isRequired: true,
-      format: 'name',
+      format: 'token',
     },
     email: {
       type: 'string',
       isRequired: true,
       format: 'email',
-    },
-    password: {
-      type: 'string',
-      isRequired: true,
-      format: 'password',
     },
   },
 } as const;
