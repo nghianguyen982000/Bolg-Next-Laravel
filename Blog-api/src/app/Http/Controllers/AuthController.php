@@ -51,6 +51,7 @@ class AuthController extends Controller
      * @OA\Post(
      *      path="/api/auth/register",
      *      tags={"Auth"},
+     *      operationId="register",
      *      @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
@@ -234,9 +235,78 @@ class AuthController extends Controller
     }
 
     /**
-     * Get a JWT via given credentials.
-     *
-     * @return \Illuminate\Http\JsonResponse
+     * @OA\Post(
+     *    path="/api/auth/login",
+     *    tags={"Auth"},
+     *    summary="login",
+     *    operationId="login",
+     *   @OA\RequestBody(
+     *          description="User data",
+     *          required=true,
+     *          @OA\MediaType(
+     *              mediaType="multipart/form-data",
+     *              @OA\Schema(
+     *                  @OA\Property(
+     *                      property="email",
+     *                      type="string",
+     *                  ),
+     *                  @OA\Property(
+     *                      property="password",
+     *                      type="string"
+     *                  ),
+     *              )
+     *          )
+     *      ),
+     *    @OA\Response(
+     *          response=200,
+     *          description="Successful login",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="access_token", type="string", example="eyJ0eXAiOiJKV1..."),
+     *              @OA\Property(property="token_type", type="string", example="bearer"),
+     *              @OA\Property(property="expires_in", type="integer", example=3600),
+     *              @OA\Property(property="user", type="object",
+     *                  @OA\Property(property="id", type="integer", example=13),
+     *                  @OA\Property(property="name", type="string", example="Gust Stracke I"),
+     *                  @OA\Property(property="email", type="string", example="freichert@schowalter.com"),
+     *                  @OA\Property(property="email_verified_at", type="string", example=null),
+     *                  @OA\Property(property="created_at", type="string", example=null),
+     *                  @OA\Property(property="updated_at", type="string", example=null),
+     *                  @OA\Property(property="primary_phone_number", type="string", example=null),
+     *                  @OA\Property(property="secondary_phone_number", type="string", example=null),
+     *                  @OA\Property(property="company_id", type="integer", example=1),
+     *                  @OA\Property(property="role_id", type="integer", example=5),
+     *                  @OA\Property(property="line_number", type="string", example=null),
+     *              ),
+     *          ),
+     *      ),
+     *    @OA\Response(
+     *           response=401,
+     *           description="Unauthenticated",
+     *           @OA\JsonContent(
+     *               @OA\Property(property="message", type="string", example="メールアドレスまたはパスワードが間違っています。")
+     *           ),
+     *       ),
+     *     @OA\Response(
+     *          response=422,
+     *          description="Validation error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="email", type="array",
+     *                  @OA\Items(type="string", example="必須項目です。")
+     *              ),
+     *              @OA\Property(property="password", type="array",
+     *                  @OA\Items(type="string", example="必須項目です。")
+     *              ),
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string")
+     *          ),
+     *      ),
+     *  )
+     * /
      */
     public function login(Request $request)
     {

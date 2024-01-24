@@ -1,0 +1,16 @@
+body #__next {
+  font-family: "Noto Sans JP", "Zen Maru Gothic", "ヒラギノ角ゴ Pro W3", Meiryo,
+    "メイリオ", Osaka, "MS PGothic", arial, helvetica, "Lucida Grande",
+    sans-serif;
+  font-weight: 400;
+  color: #333;
+  letter-spacing: 0.05em;
+
+  .ant-table-thead > tr > th {
+    font-weight: 400;
+  }
+
+  .text-primary {
+    color: #f09ca6;
+  }
+}

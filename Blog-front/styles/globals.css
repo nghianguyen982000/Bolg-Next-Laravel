@@ -1,0 +1,49 @@
+@tailwind base;
+@layer base {
+}
+
+@tailwind components;
+@tailwind utilities;
+
+.ant-modal-xl > .ant-modal {
+  width: calc(100vw - 40px) !important;
+}
+
+@media (min-width: 768px) {
+  .ant-modal-xl > .ant-modal {
+    width: calc(100vw - 320px) !important;
+  }
+}
+.ant-spin-dot-item {
+  background-color: #f19ca6 !important;
+}
+
+h1,
+.text-title {
+  @apply text-[30px] font-semibold;
+}
+
+.text-large {
+  @apply text-[18px] font-medium leading-[22px];
+}
+
+.text-medium {
+  @apply text-[18px];
+}
+
+.text-huge {
+  @apply text-2xl font-semibold;
+}
+
+.text-sm-a {
+  @apply text-[16px] font-normal;
+}
+
+.text-sm-b {
+  @apply text-[14px] font-normal leading-5 not-italic;
+}
+
+.alert {
+  font-size: 12px;
+  color: #EB4B4B;
+}

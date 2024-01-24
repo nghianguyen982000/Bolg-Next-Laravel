@@ -32,4 +32,6 @@ clear-cache:
 	docker exec blog bash -c "php artisan config:cache"
 queue:
 	docker exec blog bash -c "php artisan queue:work"
+swagger-generate:
+	docker exec blog bash -c "php artisan l5-swagger:generate"
 #sudo docker exec -it blog bash
