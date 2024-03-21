@@ -7,6 +7,7 @@ use App\Http\Controllers\LikeController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\S3Controller;
 use App\Http\Controllers\SocialController;
+use App\Http\Controllers\ChatController;
 
 /*
 |--------------------------------------------------------------------------
@@ -61,6 +62,21 @@ Route::group([
     Route::post('/{id}/comment', [CommentController::class, 'store']);
     Route::put('/{id}/comment', [CommentController::class, 'update']);
     Route::delete('/{id}/comment', [CommentController::class, 'destroy']);
+});
+
+Route::group([
+    'prefix' => 'chat'
+], function () {
+    Route::get('', [ChatController::class, 'index']);
+    Route::post('/conversations', [ChatController::class, 'createConversations']);
+    Route::get('/conversations', [ChatController::class, 'getConversations']);
+    Route::get('/conversations/{id}', [ChatController::class, 'getInfoConversations']);
+    Route::put('/conversations/{id}', [ChatController::class, 'updateConversations']);
+    Route::get('/conversations/{id}/messages', [ChatController::class, 'getMessageConversations']);
+    Route::post('/conversations/{id}/messages', [ChatController::class, 'createMessageConversations']);
+    Route::get('/message/{id}', [ChatController::class, 'getMessage']);
+    Route::put('/message/{id}', [ChatController::class, 'updateMessage']);
+    Route::delete('/message/{id}', [ChatController::class, 'deleteMessage']);
 });
 
 Route::group([
