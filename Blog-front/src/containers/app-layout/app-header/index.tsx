@@ -24,7 +24,7 @@ const AppHeader = ({}: React.PropsWithChildren<Props>): JSX.Element => {
   return (
     <>
       <div className="bg-black-3 text-white-1 py-2 px-5 flex flex-col md:flex-row justify-between">
-        <div>株式会社ネクステッジテクノロジー(NET)</div>
+        <div>Chat readtime</div>
         <div className="flex gap-3">
           <div>{account?.email || ''}</div>
           <div onClick={onLogout} className="cursor-pointer">
