@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Http\Requests\MessageRequest;
 use App\Repositories\ConversationRepository;
 use App\Repositories\MessageRepository;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -19,7 +20,7 @@ class ChatService
         $this->messageRepository = $messageRepository;
     }
 
-    public function create($data)
+    public function createConversation($data)
     {
 
         DB::beginTransaction();
@@ -44,6 +45,15 @@ class ChatService
         return $conversation;
     }
 
+    public function getConversations()
+    {
+        $conversation = $this->repository->all();
+        if (!$conversation) {
+            throw new ModelNotFoundException();
+        }
+        return $conversation;
+    }
+
     public function updateConversation($id, $data)
     {
         $conversation = $this->repository->update($data, $id);
@@ -53,6 +63,15 @@ class ChatService
         return  $conversation;
     }
 
+    public function deleteConversation($id)
+    {
+        $conversation = $this->repository->delete($id);
+        if (!$conversation) {
+            return false;
+        }
+        return  true;
+    }
+
     public function getMessageConversation($id)
     {
         $messageConversation = $this->messageRepository->getMessageConversation($id);
@@ -60,5 +79,49 @@ class ChatService
             throw new ModelNotFoundException();
         }
         return $messageConversation;
+    }
+
+    public function createMessageConversation($id, $data)
+    {
+
+        DB::beginTransaction();
+
+        $data['conversation_id'] = $id;
+        $data['user_id'] = auth()->id();
+        $message = $this->messageRepository->create($data);
+        if ($message) {
+            DB::commit();
+            return $message;
+        } else {
+            DB::rollBack();
+            return false;
+        }
+    }
+
+    public function getMessage($id)
+    {
+        $message = $this->messageRepository->find($id);
+        if (!$message) {
+            throw new ModelNotFoundException();
+        }
+        return $message;
+    }
+
+    public function updateMessage($id, $data)
+    {
+        $message = $this->messageRepository->update($data, $id);
+        if (!$message) {
+            return false;
+        }
+        return  $message;
+    }
+
+    public function deleteMessage($id)
+    {
+        $message = $this->messageRepository->delete($id);
+        if (!$message) {
+            return false;
+        }
+        return  true;
     }
 }

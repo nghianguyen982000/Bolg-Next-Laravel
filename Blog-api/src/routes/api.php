@@ -68,12 +68,13 @@ Route::group([
     'prefix' => 'chat'
 ], function () {
     Route::get('', [ChatController::class, 'index']);
-    Route::post('/conversations', [ChatController::class, 'createConversations']);
+    Route::post('/conversations', [ChatController::class, 'createConversation']);
     Route::get('/conversations', [ChatController::class, 'getConversations']);
-    Route::get('/conversations/{id}', [ChatController::class, 'getInfoConversations']);
-    Route::put('/conversations/{id}', [ChatController::class, 'updateConversations']);
-    Route::get('/conversations/{id}/messages', [ChatController::class, 'getMessageConversations']);
-    Route::post('/conversations/{id}/messages', [ChatController::class, 'createMessageConversations']);
+    Route::get('/conversations/{id}', [ChatController::class, 'getInfoConversation']);
+    Route::put('/conversations/{id}', [ChatController::class, 'updateConversation']);
+    Route::delete('/conversations/{id}', [ChatController::class, 'deleteConversation']);
+    Route::get('/conversations/{id}/messages', [ChatController::class, 'getMessageConversation']);
+    Route::post('/conversations/{id}/messages', [ChatController::class, 'createMessageConversation']);
     Route::get('/message/{id}', [ChatController::class, 'getMessage']);
     Route::put('/message/{id}', [ChatController::class, 'updateMessage']);
     Route::delete('/message/{id}', [ChatController::class, 'deleteMessage']);
