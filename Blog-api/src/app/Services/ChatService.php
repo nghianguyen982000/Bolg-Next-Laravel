@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Http\Requests\MessageRequest;
+use App\Http\Resources\MessageResource;
+use App\Jobs\ChatJob;
 use App\Repositories\ConversationRepository;
 use App\Repositories\MessageRepository;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -90,6 +92,7 @@ class ChatService
         $data['user_id'] = auth()->id();
         $message = $this->messageRepository->create($data);
         if ($message) {
+            event(new ChatJob(($message)));
             DB::commit();
             return $message;
         } else {

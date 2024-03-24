@@ -1,4 +1,4 @@
-import pageListHome from './home'
+import pageListHome from './chat'
 
 export const pageList = {
   ...pageListHome,

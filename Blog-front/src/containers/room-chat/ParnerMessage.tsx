@@ -7,7 +7,7 @@ type Props = {
 
 const ParnerMessage = ({ message }: Props) => {
   return (
-    <div className="flex gap-4">
+    <div className="flex gap-4  pb-4">
       <div>
         <Avatar size="large" icon={<UserOutlined />} />
       </div>

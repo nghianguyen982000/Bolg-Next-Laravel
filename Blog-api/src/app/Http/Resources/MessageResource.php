@@ -16,7 +16,13 @@ class MessageResource extends JsonResource
     {
         return [
             'id' => $this->resource->id,
-            'content' => $this->resource->content,
+            'message' => $this->resource->content,
+            'messageType' => $this->getAuthor($this->resource->user_id)
         ];
+    }
+
+    private function getAuthor($user_id)
+    {
+        return $user_id === auth()->id() ? 0 : 1;
     }
 }

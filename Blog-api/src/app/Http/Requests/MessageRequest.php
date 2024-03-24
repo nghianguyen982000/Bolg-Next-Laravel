@@ -4,7 +4,14 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-
+/**
+ * @OA\Schema(
+ *      required={"content"},
+ *      properties={
+ *           @OA\Property(property="content",type="string", example="content"),
+ *      }
+ * )
+ */
 
 class MessageRequest extends FormRequest
 {

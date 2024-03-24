@@ -14,9 +14,9 @@ const RoomItem = ({ id, roomName }: Props) => {
       className={`cursor-pointer  rounded p-1 line-clamp-1 hover:bg-pink-4 ${
         query.id === id.toString() ? 'bg-pink-4' : 'bg-yellow-2 '
       }`}
-      onClick={() => push(`home?id=${id}`)}
+      onClick={() => push(`chat?id=${id}`)}
     >
-      Room Name {roomName}
+      {roomName}
     </div>
   )
 }

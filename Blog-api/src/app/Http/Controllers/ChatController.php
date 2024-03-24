@@ -51,6 +51,34 @@ class ChatController extends Controller
         }
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/chat/conversations/{id}",
+     *     summary="Get detail conversation",
+     *     tags={"Chat"},
+     *     security={{"AdminBearerAuth":{}}},
+     *     operationId="getInfoConversation",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID conversation",
+     *         required=true,
+     *         @OA\Schema(type="integer", format="int64"),
+     *     ),
+     *     @OA\Response(
+     *          response=200,
+     *          description="Successfully",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="success", type="boolean", example="true"),
+     *              @OA\Property(property="data", type="object", 
+     *                 @OA\Property(property="id", type="integer"),
+     *                 @OA\Property(property="room_name", type="string"),
+     *             ),
+     *          ),
+     *       ),
+     * )
+     */
+
     public function getInfoConversation($id)
     {
         try {
@@ -73,6 +101,29 @@ class ChatController extends Controller
             Response::HTTP_OK
         );
     }
+
+
+    /**
+     * Get all Room
+     *
+     * @OA\Get(
+     *      path="/api/chat/conversations",
+     *      tags={"Chat"},
+     *      operationId="getConversations",
+     *      security={{"AdminBearerAuth":{}}},
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successfully",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="success", type="boolean", example="true"),
+     *              @OA\Property(property="data", type="array", @OA\Items(
+     *                 @OA\Property(property="id", type="integer"),
+     *                 @OA\Property(property="room_name", type="string"),
+     *             )),
+     *          ),
+     *       ),
+     * )
+     */
 
     public function getConversations()
     {
@@ -154,6 +205,35 @@ class ChatController extends Controller
     }
 
 
+    /**
+     * @OA\Get(
+     *     path="/api/chat/conversations/{id}/messages",
+     *     summary="Get message conversation",
+     *     tags={"Chat"},
+     *     security={{"AdminBearerAuth":{}}},
+     *     operationId="getMessageConversation",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID conversation",
+     *         required=true,
+     *         @OA\Schema(type="integer", format="int64"),
+     *     ),
+     *     @OA\Response(
+     *          response=200,
+     *          description="Successfully",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="success", type="boolean", example="true"),
+     *              @OA\Property(property="data", type="array", @OA\Items(
+     *                 @OA\Property(property="id", type="integer"),
+     *                 @OA\Property(property="message", type="string"),
+     *                 @OA\Property(property="messageType", type="integer"),
+     *             )),
+     *          ),
+     *       ),
+     * )
+     */
+
     public function getMessageConversation($id)
     {
         try {
@@ -176,6 +256,45 @@ class ChatController extends Controller
             Response::HTTP_OK
         );
     }
+
+
+    /**
+     *
+     *   @OA\Post(
+     *      path="/api/chat/conversations/{id}/messages",
+     *      summary="Create message conversation",
+     *      tags={"Chat"},
+     *      security={{"AdminBearerAuth":{}}},
+     *      operationId="createConversation",
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID conversation",
+     *         required=true,
+     *         @OA\Schema(type="integer", format="int64"),
+     *      ),
+     *      @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *              ref="#/components/schemas/MessageRequest"
+     *         )
+     *      ),
+     *      @OA\Response(
+     *          response=201,
+     *          description="Successfully",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="success", type="boolean", example="true"),
+     *              @OA\Property(property="data", type="array", @OA\Items(
+     *                 @OA\Property(property="id", type="integer"),
+     *                 @OA\Property(property="content", type="string"),
+     *                 @OA\Property(property="messageType", type="integer"),
+     *             )),
+     *          ),
+     *       ),
+     * )
+     */
+
+
     public function createMessageConversation($id, MessageRequest $request)
     {
         try {
