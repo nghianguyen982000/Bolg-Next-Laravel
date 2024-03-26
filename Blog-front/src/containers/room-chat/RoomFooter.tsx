@@ -21,17 +21,21 @@ const RoomFooter = ({ handleSendMessage, message, setMessage }: Props) => {
     }
   }
   return (
-    <div className="bg-blue-1 p-2 flex-none flex items-end">
+    <div className="border-t-[#E9E9E9] border-t p-5 flex-none flex items-center ">
       <TextArea
-        rows={4}
+        placeholder="Type your message here"
         value={message}
+        autoSize
         onChange={(e) => setMessage(e.target.value)}
         onKeyDown={handleKeyDownInput}
+        className="textarea-custom"
       />
       <Button
+        shape="circle"
         disabled={message.replace(/\s{2,}/g, ' ').trim() === ''}
-        className="!flex items-center"
+        className="!flex items-center justify-center"
         type="text"
+        size="large"
         onClick={() => handleSendMessage(message)}
       >
         <SendOutlined />

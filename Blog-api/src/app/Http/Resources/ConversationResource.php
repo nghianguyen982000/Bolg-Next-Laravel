@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Services\UploadServiceInterface;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class ConversationResource extends JsonResource
@@ -14,9 +15,12 @@ class ConversationResource extends JsonResource
      */
     public function toArray($request)
     {
+
+        $uploadService = app()->make(UploadServiceInterface::class);
         return [
             'id' => $this->resource->id,
-            'room_name' => $this->resource->room_name
+            'room_name' => $this->resource->room_name,
+            'avatar' =>  !$this->resource->avatar ? null : $uploadService->getPreSigned($this->resource->avatar, 'GetObject'),
         ];
     }
 }

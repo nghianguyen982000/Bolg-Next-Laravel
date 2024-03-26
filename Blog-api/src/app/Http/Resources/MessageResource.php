@@ -16,8 +16,10 @@ class MessageResource extends JsonResource
     {
         return [
             'id' => $this->resource->id,
+            'userName' => $this->resource->user->name,
             'message' => $this->resource->content,
-            'messageType' => $this->getAuthor($this->resource->user_id)
+            'messageType' => $this->getAuthor($this->resource->user_id),
+            'createdAt' => $this->resource->created_at,
         ];
     }
 

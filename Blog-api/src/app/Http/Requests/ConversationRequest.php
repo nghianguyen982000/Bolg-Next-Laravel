@@ -26,7 +26,8 @@ class ConversationRequest extends FormRequest
     public function rules()
     {
         return [
-            'room_name' => ['string']
+            'room_name' => ['string'],
+            'avatar' => ['string'],
         ];
     }
 }

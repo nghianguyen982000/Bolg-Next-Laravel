@@ -3,7 +3,7 @@ type Props = {
 }
 const RoomHead = ({ roomName }: Props) => {
   return (
-    <div className="bg-pink-1 w-full p-2 flex-none flex justify-end">
+    <div className="border-b-[#E9E9E9] border-b w-full h-[64px]  flex-none flex items-center justify-end pr-5">
       {roomName}
     </div>
   )

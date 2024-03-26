@@ -2,8 +2,6 @@
 
 namespace App\Services;
 
-use App\Http\Requests\MessageRequest;
-use App\Http\Resources\MessageResource;
 use App\Jobs\ChatJob;
 use App\Repositories\ConversationRepository;
 use App\Repositories\MessageRepository;

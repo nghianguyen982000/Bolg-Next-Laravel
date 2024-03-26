@@ -23,6 +23,7 @@
     "aws-amplify": "^5.3.1",
     "axios": "^1.4.0",
     "clsx": "^1.2.1",
+    "date-fns": "^3.6.0",
     "dayjs": "^1.11.9",
     "eslint-config-next": "13.4.5",
     "jotai": "^2.2.1",

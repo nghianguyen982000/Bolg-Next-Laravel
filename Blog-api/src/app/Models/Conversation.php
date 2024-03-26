@@ -9,7 +9,8 @@ class Conversation extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'room_name'
+        'room_name',
+        'avatar'
     ];
 
     // Define the relationship with the participants

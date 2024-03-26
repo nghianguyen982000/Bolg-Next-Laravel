@@ -27,6 +27,7 @@ export class ChatService {
     data?: {
       id?: number;
       room_name?: string;
+      avatar?: string;
     };
   }> {
     return __request(OpenAPI, {
@@ -48,6 +49,7 @@ export class ChatService {
     data?: Array<{
       id?: number;
       room_name?: string;
+      avatar?: string;
     }>;
   }> {
     return __request(OpenAPI, {
@@ -74,6 +76,8 @@ export class ChatService {
       id?: number;
       message?: string;
       messageType?: number;
+      createdAt?: string;
+      userName?: string;
     }>;
   }> {
     return __request(OpenAPI, {
@@ -105,6 +109,8 @@ export class ChatService {
       id?: number;
       content?: string;
       messageType?: number;
+      createdAt?: string;
+      userName?: string;
     }>;
   }> {
     return __request(OpenAPI, {

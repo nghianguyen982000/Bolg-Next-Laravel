@@ -29,7 +29,7 @@ services:
   # Redis
   redis:
     image: redis
-    container_name: redis
+    container_name: redis-blog
     ports:
       - 6379:6379
     volumes:
@@ -57,13 +57,13 @@ services:
     working_dir: /var/www
 
   # phpMyAdmin Service
-  phpmyadmin:
-    image: phpmyadmin:latest
-    container_name: phpmyadmin
-    ports:
-      - "3400:80"
-    depends_on:
-      - db
+  # phpmyadmin:
+  #   image: phpmyadmin:latest
+  #   container_name: phpmyadmin
+  #   ports:
+  #     - "3400:80"
+  #   depends_on:
+  #     - db
   # pgadmin:
   #   image: phpmyadmin/phpmyadmin
   #   container_name: pgAdmin

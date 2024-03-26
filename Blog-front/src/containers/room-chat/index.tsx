@@ -1,6 +1,8 @@
+import { SearchOutlined } from '@ant-design/icons'
 import { ChatService } from '@root/client_sdk'
 import { getCurrentAccount } from '@root/client_sdk/request/cookie'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { Input } from 'antd'
 import { useRouter } from 'next/router'
 import React, { useEffect, useState } from 'react'
 import InfiniteScroll from 'react-infinite-scroll-component'
@@ -117,9 +119,17 @@ const RoomChat = () => {
   }
 
   return (
-    <div className="flex justify-center">
-      <div className="flex w-[1000px] h-[800px] bg-yellow-2 border ">
-        <div className="w-[200px] bg-green-1 p-2 flex flex-col gap-2">
+    <div className="flex justify-center items-center bg-[#F4F4FE] h-full">
+      <div className="flex w-[1200px] h-[800px] bg-[#ffffff] shadow-2xl ">
+        <div className="w-[400px] bg-[#F4F5F9] flex flex-col border-r-[#E9E9E9] border-r">
+          <div className="p-4 border-b-[#E9E9E9] border-b">
+            <Input
+              size="middle"
+              placeholder="Search room"
+              prefix={<SearchOutlined />}
+              className="input-search-custom"
+            />
+          </div>
           {rooms?.data?.map((item) => {
             return (
               <RoomItem id={item.id} roomName={item.room_name} key={item.id} />
@@ -153,13 +163,19 @@ const RoomChat = () => {
                   .map((message) => {
                     if (message?.messageType === 0) {
                       return (
-                        <MyMessage message={message.message} key={message.id} />
+                        <MyMessage
+                          message={message.message}
+                          key={message.id}
+                          createdAt={message.createdAt}
+                        />
                       )
                     } else {
                       return (
                         <ParnerMessage
+                          userName={message.userName}
                           message={message.message}
                           key={message.id}
+                          createdAt={message.createdAt}
                         />
                       )
                     }
