@@ -26,6 +26,14 @@ services:
       MYSQL_DATABASE: blog
       MYSQL_ROOT_PASSWORD: password
 
+  # Redis
+  redis:
+    image: redis
+    container_name: redis-blog
+    ports:
+      - 6379:6379
+    volumes:
+      - ./redis:/data
   # db:
   #   image: postgres
   #   container_name: postgres
@@ -49,13 +57,13 @@ services:
     working_dir: /var/www
 
   # phpMyAdmin Service
-  phpmyadmin:
-    image: phpmyadmin:latest
-    container_name: phpmyadmin
-    ports:
-      - "3400:80"
-    depends_on:
-      - db
+  # phpmyadmin:
+  #   image: phpmyadmin:latest
+  #   container_name: phpmyadmin
+  #   ports:
+  #     - "3400:80"
+  #   depends_on:
+  #     - db
   # pgadmin:
   #   image: phpmyadmin/phpmyadmin
   #   container_name: pgAdmin

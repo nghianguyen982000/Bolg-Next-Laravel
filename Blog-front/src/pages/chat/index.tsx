@@ -1,14 +1,16 @@
 import Head from 'next/head'
 
-import pageListAdmin from '@/common/helpers/page/admin'
+import { pageList } from '@/common/helpers/page'
 import AppLayout from '@/containers/app-layout'
+import RoomChat from '@/containers/room-chat'
 
 const Page = () => {
   return (
     <>
       <Head>
-        <title>{pageListAdmin.adminHome.text}</title>
+        <title>{pageList.home.text}</title>
       </Head>
+      <RoomChat />
     </>
   )
 }

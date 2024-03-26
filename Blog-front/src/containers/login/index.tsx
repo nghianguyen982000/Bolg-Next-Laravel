@@ -1,4 +1,4 @@
-import { AuthService } from '@root/client_sdk'
+import { AuthService, LoginRequest } from '@root/client_sdk'
 import { setSessionCookie } from '@root/client_sdk/request/cookie'
 import { Button, message } from 'antd'
 import { useRouter } from 'next/router'
@@ -8,16 +8,14 @@ import { Controller, useForm } from 'react-hook-form'
 import FormItemCustom from '@/common/components/form/form-input'
 import { InputPassword } from '@/common/components/input/input-password'
 import { InputText } from '@/common/components/input/input-text'
-import pageListAdmin from '@/common/helpers/page/admin'
-
-export type PostLoginRequest = Parameters<typeof AuthService.login>[0]
+import { pageList } from '@/common/helpers/page'
 
 export const LoginContainer = () => {
   const {
     handleSubmit,
     control,
     formState: { errors },
-  } = useForm<PostLoginRequest['formData']>({
+  } = useForm<LoginRequest>({
     defaultValues: { email: '', password: '' },
   })
 
@@ -25,16 +23,16 @@ export const LoginContainer = () => {
 
   const [loading, setLoading] = useState<boolean>(false)
 
-  const onLogin = async (data: PostLoginRequest['formData']) => {
+  const onLogin = async (data: LoginRequest) => {
     setLoading(true)
     try {
       const ret = await AuthService.login({
-        formData: data,
+        requestBody: data,
       })
       setSessionCookie(ret)
-      router.push(pageListAdmin.adminHome.url)
+      router.push(pageList.home.url)
     } catch (error: any) {
-      message.error('Please enter your email address and password')
+      message.error('Please enter your name, email address and password')
     }
     setLoading(false)
   }

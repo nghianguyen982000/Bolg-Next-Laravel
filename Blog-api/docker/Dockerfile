@@ -49,6 +49,6 @@ RUN docker-php-ext-install \
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Install Postgre PDO
-RUN apt-get install -y libpq-dev \
-    && docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
-    && docker-php-ext-install pdo pdo_pgsql pgsql
+# RUN apt-get install -y libpq-dev \
+#     && docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
+#     && docker-php-ext-install pdo pdo_pgsql pgsql

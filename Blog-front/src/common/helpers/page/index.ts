@@ -1,7 +1,5 @@
-import pageListAdmin from './admin'
+import pageListHome from './chat'
 
 export const pageList = {
-  ...pageListAdmin,
+  ...pageListHome,
 }
-
-export const ADMIN_PATHS = [pageListAdmin.adminHome.url]

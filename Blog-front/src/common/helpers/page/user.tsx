@@ -1,7 +1,7 @@
 import { PageStaticList } from './type'
 const pageListUser: PageStaticList = {
   login: {
-    text: 'ログイン画面',
+    text: 'Login',
     url: '/login',
   },
 }
